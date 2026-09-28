@@ -1,131 +1,597 @@
 import { useEffect, useState } from 'react';
-import { getMedicamentos } from '../services/api';
-import { FaPills, FaSearch, FaPlus, FaBoxOpen, FaEdit, FaTrash } from 'react-icons/fa';
+
+import { getMedicamentos, getCategorias } from '../services/api';
+
+import {
+    Box,
+    Typography,
+    Button,
+    TextField,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Paper,
+    CircularProgress,
+    IconButton,
+    Chip,
+    MenuItem,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
+} from '@mui/material';
+
+import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy';
+import AddIcon from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function Medicamentos() {
     const [medicamentos, setMedicamentos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [busqueda, setBusqueda] = useState('');
+    const [categorias, setCategorias] = useState([]);
+    const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
+
+    const [formularioAbierto, setFormularioAbierto] = useState(false);
+
+    const [nuevoMedicamento, setNuevoMedicamento] = useState({
+        nombre: '',
+        descripcion: '',
+        precio: '',
+        stock: '',
+        categoria_id: ''
+    });
 
     useEffect(() => {
-        async function cargarMedicamentos() {
+        async function cargarDatos() {
             try {
-                const data = await getMedicamentos();
-                if (Array.isArray(data)) {
-                    setMedicamentos(data);
+                const [medicamentosData, categoriasData] = await Promise.all([
+                    getMedicamentos(),
+                    getCategorias()
+                ]);
+
+                if (Array.isArray(medicamentosData)) {
+                    setMedicamentos(medicamentosData);
+                }
+
+                if (Array.isArray(categoriasData)) {
+                    setCategorias(categoriasData);
                 }
             } catch (error) {
-                console.error("Error al cargar medicamentos:", error);
+                console.error('Error al cargar datos:', error);
             } finally {
                 setLoading(false);
             }
         }
 
-        cargarMedicamentos();
+        cargarDatos();
     }, []);
 
-    // Filtro de búsqueda en tiempo real (cuando tu compañero conecte el backend, esto buscará entre los productos)
+    // Filtrar medicamentos por nombre
     const medicamentosFiltrados = medicamentos.filter((med) =>
         med.nombre?.toLowerCase().includes(busqueda.toLowerCase())
     );
 
+    // Actualizar los campos del formulario
+    const handleCambioFormulario = (e) => {
+        const { name, value } = e.target;
+
+        setNuevoMedicamento({
+            ...nuevoMedicamento,
+            [name]: value
+        });
+    };
+
+    // Cerrar formulario y limpiar los campos
+    const cerrarFormulario = () => {
+        setFormularioAbierto(false);
+
+        setNuevoMedicamento({
+            nombre: '',
+            descripcion: '',
+            precio: '',
+            stock: '',
+            categoria_id: ''
+        });
+    };
+
     return (
-        <div className="p-6 md:p-10 bg-slate-900 min-h-screen text-slate-100">
-            {/* Encabezado de la vista */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8 gap-4">
-                <div>
-                    <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
-                        <span className="p-2 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
-                            <FaPills />
-                        </span>
-                        Gestión de Medicamentos
-                    </h1>
-                    <p className="text-slate-400 mt-1 text-sm">
-                        Administra el inventario, precios y stock de los productos farmacéuticos.
-                    </p>
-                </div>
+        <Box
+            sx={{
+                minHeight: 'calc(100vh - 72px)',
+                px: { xs: 2, md: 5 },
+                py: { xs: 3, md: 5 },
+                maxWidth: 1400,
+                mx: 'auto'
+            }}
+        >
+            {/* Encabezado */}
+            <Box
+                sx={{
+                    mb: 4,
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: { xs: 'flex-start', md: 'center' },
+                    flexDirection: { xs: 'column', md: 'row' },
+                    gap: 2
+                }}
+            >
+                <Box>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                width: 48,
+                                height: 48,
+                                borderRadius: 3,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                background: 'linear-gradient(135deg, #1976D2, #26A69A)',
+                                color: '#FFFFFF',
+                                boxShadow: '0 5px 12px rgba(25, 118, 210, 0.2)'
+                            }}
+                        >
+                            <LocalPharmacyIcon sx={{ fontSize: 27 }} />
+                        </Box>
 
-                {/* Botón de acción principal */}
-                <button className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-emerald-600/20 transition-all duration-200">
-                    <FaPlus size={14} />
-                    <span>Nuevo Medicamento</span>
-                </button>
-            </div>
+                        <Box>
+                            <Typography
+                                variant="h4"
+                                component="h1"
+                                sx={{
+                                    fontWeight: 700,
+                                    color: 'text.primary',
+                                    lineHeight: 1.2
+                                }}
+                            >
+                                Medicamentos
+                            </Typography>
 
-            {/* Barra de herramientas / Buscador */}
-            <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 p-4 rounded-2xl mb-6 flex items-center gap-3">
-                <span className="text-slate-400 pl-2">
-                    <FaSearch />
-                </span>
-                <input
-                    type="text"
-                    placeholder="Buscar medicamentos por nombre..."
-                    value={busqueda}
-                    onChange={(e) => setBusqueda(e.target.value)}
-                    className="bg-transparent border-none outline-none text-white placeholder-slate-500 w-full text-sm"
-                />
-            </div>
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    color: 'text.secondary',
+                                    mt: 0.3
+                                }}
+                            >
+                                Gestión del inventario farmacéutico
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Box>
 
-            {/* Contenedor de la tabla */}
-            <div className="bg-slate-800/40 backdrop-blur-xl border border-slate-700/50 rounded-3xl overflow-hidden shadow-xl">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-slate-700/60 bg-slate-800/80 text-slate-400 text-xs uppercase tracking-wider font-bold">
-                                <th className="py-4 px-6">ID</th>
-                                <th className="py-4 px-6">Nombre</th>
-                                <th className="py-4 px-6">Descripción</th>
-                                <th className="py-4 px-6">Precio</th>
-                                <th className="py-4 px-6">Stock</th>
-                                <th className="py-4 px-6 text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-700/40 text-sm">
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={6} className="py-12 text-center text-slate-400 animate-pulse">
-                                        Cargando inventario de medicamentos...
-                                    </td>
-                                </tr>
-                            ) : medicamentosFiltrados.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="py-12 text-center text-slate-400">
-                                        <div className="flex flex-col items-center justify-center gap-2">
-                                            <FaBoxOpen className="text-3xl text-slate-600 mb-1" />
-                                            <p>No se encontraron medicamentos registrados o el backend no está conectado.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ) : (
-                                medicamentosFiltrados.map((med) => (
-                                    <tr key={med.id} className="hover:bg-slate-700/20 transition-colors">
-                                        <td className="py-4 px-6 font-mono text-xs text-slate-400">#{med.id}</td>
-                                        <td className="py-4 px-6 font-semibold text-white">{med.nombre}</td>
-                                        <td className="py-4 px-6 text-slate-300">{med.descripcion}</td>
-                                        <td className="py-4 px-6 font-medium text-emerald-400">${med.precio}</td>
-                                        <td className="py-4 px-6">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${med.stock > 10 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-                                                }`}>
-                                                {med.stock} unidades
-                                            </span>
-                                        </td>
-                                        <td className="py-4 px-6 text-center">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <button className="p-2 bg-slate-700/50 hover:bg-blue-600/20 hover:text-blue-400 text-slate-300 rounded-xl transition-colors">
-                                                    <FaEdit size={14} />
-                                                </button>
-                                                <button className="p-2 bg-slate-700/50 hover:bg-rose-600/20 hover:text-rose-400 text-slate-300 rounded-xl transition-colors">
-                                                    <FaTrash size={14} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+                <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={() => setFormularioAbierto(true)}
+                    sx={{
+                        borderRadius: 2,
+                        px: 2.5,
+                        py: 1.2,
+                        color: '#FFFFFF',
+                        background: 'linear-gradient(135deg, #1976D2, #26A69A)',
+                        boxShadow: '0 6px 15px rgba(25, 118, 210, 0.2)',
+                        '&:hover': {
+                            background: 'linear-gradient(135deg, #1565C0, #00897B)',
+                            boxShadow: '0 8px 18px rgba(25, 118, 210, 0.25)'
+                        }
+                    }}
+                >
+                    Nuevo medicamento
+                </Button>
+            </Box>
+
+            {/* Barra de búsqueda y filtro */}
+            <Paper
+                sx={{
+                    p: 2,
+                    mb: 3,
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    boxShadow: '0 2px 8px rgba(31, 41, 55, 0.04)'
+                }}
+            >
+                <Box
+                    sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        flexDirection: { xs: 'column', md: 'row' }
+                    }}
+                >
+                    <TextField
+                        fullWidth
+                        variant="outlined"
+                        placeholder="Buscar medicamento por nombre..."
+                        value={busqueda}
+                        onChange={(e) => setBusqueda(e.target.value)}
+                        InputProps={{
+                            startAdornment: (
+                                <SearchIcon
+                                    sx={{
+                                        color: 'primary.main',
+                                        mr: 1
+                                    }}
+                                />
+                            )
+                        }}
+                    />
+
+                    <TextField
+                        select
+                        label="Categoría"
+                        value={categoriaSeleccionada}
+                        onChange={(e) =>
+                            setCategoriaSeleccionada(e.target.value)
+                        }
+                        sx={{
+                            minWidth: { xs: '100%', md: 220 }
+                        }}
+                    >
+                        <MenuItem value="">
+                            Todas las categorías
+                        </MenuItem>
+
+                        {categorias.map((categoria) => (
+                            <MenuItem
+                                key={categoria.id}
+                                value={categoria.id}
+                            >
+                                {categoria.nombre}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                </Box>
+            </Paper>
+
+            {/* Tabla de Datos */}
+            <TableContainer
+                component={Paper}
+                sx={{
+                    borderRadius: 3,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    boxShadow: '0 4px 14px rgba(31, 41, 55, 0.06)',
+                    overflow: 'hidden'
+                }}
+            >
+                <Table>
+                    <TableHead>
+                        <TableRow
+                            sx={{
+                                background: 'linear-gradient(90deg, #EAF4FF 0%, #ECFAF7 100%)'
+                            }}
+                        >
+                            <TableCell
+                                sx={{
+                                    fontWeight: 700,
+                                    color: '#1565C0',
+                                    py: 2
+                                }}
+                            >
+                                ID
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    fontWeight: 700,
+                                    color: '#1565C0'
+                                }}
+                            >
+                                Nombre
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    fontWeight: 700,
+                                    color: '#00897B'
+                                }}
+                            >
+                                Descripción
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    fontWeight: 700,
+                                    color: '#1565C0'
+                                }}
+                            >
+                                Precio
+                            </TableCell>
+
+                            <TableCell
+                                sx={{
+                                    fontWeight: 700,
+                                    color: '#00897B'
+                                }}
+                            >
+                                Stock
+                            </TableCell>
+
+                            <TableCell
+                                align="center"
+                                sx={{
+                                    fontWeight: 700,
+                                    color: '#7E57C2'
+                                }}
+                            >
+                                Acciones
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
+
+                    <TableBody>
+                        {loading ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={6}
+                                    align="center"
+                                    sx={{ py: 6 }}
+                                >
+                                    <CircularProgress color="primary" />
+
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{ mt: 1 }}
+                                    >
+                                        Cargando inventario...
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        ) : medicamentosFiltrados.length === 0 ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={6}
+                                    align="center"
+                                    sx={{ py: 6 }}
+                                >
+                                    <Typography color="text.secondary">
+                                        No se encontraron medicamentos registrados.
+                                    </Typography>
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            medicamentosFiltrados.map((med) => (
+                                <TableRow
+                                    key={med.id}
+                                    sx={{
+                                        transition: 'background-color 0.2s ease',
+                                        '&:hover': {
+                                            backgroundColor: '#F5FAFC'
+                                        },
+                                        '&:last-child td': {
+                                            borderBottom: 0
+                                        }
+                                    }}
+                                >
+                                    <TableCell>
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                fontFamily: 'monospace',
+                                                fontWeight: 600,
+                                                color: 'text.secondary'
+                                            }}
+                                        >
+                                            #{med.id}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell>
+                                        <Typography
+                                            sx={{
+                                                fontWeight: 700,
+                                                color: 'text.primary'
+                                            }}
+                                        >
+                                            {med.nombre}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell>
+                                        <Typography
+                                            variant="body2"
+                                            sx={{
+                                                color: 'text.secondary',
+                                                maxWidth: 300
+                                            }}
+                                        >
+                                            {med.descripcion}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell>
+                                        <Typography
+                                            sx={{
+                                                fontWeight: 700,
+                                                color: '#1565C0'
+                                            }}
+                                        >
+                                            ${med.precio}
+                                        </Typography>
+                                    </TableCell>
+
+                                    <TableCell>
+                                        <Chip
+                                            label={`${med.stock} unidades`}
+                                            size="small"
+                                            color={
+                                                med.stock > 10
+                                                    ? 'success'
+                                                    : 'error'
+                                            }
+                                            sx={{
+                                                fontWeight: 600,
+                                                borderRadius: 2
+                                            }}
+                                        />
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                        <IconButton
+                                            size="small"
+                                            sx={{
+                                                color: '#1976D2',
+                                                backgroundColor: '#EEF7FF',
+                                                mr: 0.5,
+                                                '&:hover': {
+                                                    backgroundColor: '#DCEEFF'
+                                                }
+                                            }}
+                                        >
+                                            <EditIcon fontSize="small" />
+                                        </IconButton>
+
+                                        <IconButton
+                                            size="small"
+                                            sx={{
+                                                color: '#D32F2F',
+                                                backgroundColor: '#FFF1F1',
+                                                '&:hover': {
+                                                    backgroundColor: '#FFE0E0'
+                                                }
+                                            }}
+                                        >
+                                            <DeleteIcon fontSize="small" />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        )}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+
+            {/* Formulario de nuevo medicamento */}
+            <Dialog
+                open={formularioAbierto}
+                onClose={cerrarFormulario}
+                fullWidth
+                maxWidth="sm"
+            >
+                <DialogTitle
+                    sx={{
+                        fontWeight: 700,
+                        pb: 1
+                    }}
+                >
+                    Nuevo medicamento
+                </DialogTitle>
+
+                <DialogContent>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 2,
+                            pt: 1
+                        }}
+                    >
+                        <TextField
+                            label="Nombre"
+                            name="nombre"
+                            value={nuevoMedicamento.nombre}
+                            onChange={handleCambioFormulario}
+                            fullWidth
+                        />
+
+                        <TextField
+                            label="Descripción"
+                            name="descripcion"
+                            value={nuevoMedicamento.descripcion}
+                            onChange={handleCambioFormulario}
+                            multiline
+                            rows={3}
+                            fullWidth
+                        />
+
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                gap: 2,
+                                flexDirection: { xs: 'column', sm: 'row' }
+                            }}
+                        >
+                            <TextField
+                                label="Precio"
+                                name="precio"
+                                type="number"
+                                value={nuevoMedicamento.precio}
+                                onChange={handleCambioFormulario}
+                                fullWidth
+                            />
+
+                            <TextField
+                                label="Stock"
+                                name="stock"
+                                type="number"
+                                value={nuevoMedicamento.stock}
+                                onChange={handleCambioFormulario}
+                                fullWidth
+                            />
+                        </Box>
+
+                        <TextField
+                            select
+                            label="Categoría"
+                            name="categoria_id"
+                            value={nuevoMedicamento.categoria_id}
+                            onChange={handleCambioFormulario}
+                            fullWidth
+                        >
+                            <MenuItem value="">
+                                Seleccionar categoría
+                            </MenuItem>
+
+                            {categorias.map((categoria) => (
+                                <MenuItem
+                                    key={categoria.id}
+                                    value={categoria.id}
+                                >
+                                    {categoria.nombre}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </Box>
+                </DialogContent>
+
+                <DialogActions
+                    sx={{
+                        px: 3,
+                        pb: 3
+                    }}
+                >
+                    <Button
+                        onClick={cerrarFormulario}
+                        sx={{
+                            color: 'text.secondary'
+                        }}
+                    >
+                        Cancelar
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        disabled
+                        startIcon={<AddIcon />}
+                    >
+                        Guardar medicamento
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </Box>
     );
 }
