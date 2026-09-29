@@ -17,10 +17,9 @@ export default function Navbar() {
             position="static"
             elevation={0}
             sx={{
-                backgroundColor: '#FFFFFF',
-                color: 'text.primary',
-                borderBottom: '1px solid',
-                borderColor: 'divider'
+                background: 'linear-gradient(135deg, #00897B 0%, #00796B 45%, #1565C0 100%)',
+                color: '#FFFFFF',
+                boxShadow: '0 4px 16px rgba(25, 118, 210, 0.22)'
             }}
         >
             <Toolbar
@@ -32,7 +31,7 @@ export default function Navbar() {
                     mx: 'auto'
                 }}
             >
-                {/* Logo */}
+                {/* Logo y nombre */}
                 <Box
                     component={Link}
                     to="/"
@@ -41,24 +40,24 @@ export default function Navbar() {
                         alignItems: 'center',
                         gap: 1.2,
                         textDecoration: 'none',
-                        color: 'text.primary',
+                        color: '#FFFFFF',
                         mr: { xs: 2, md: 5 }
                     }}
                 >
                     <Box
                         sx={{
-                            width: 42,
-                            height: 42,
-                            borderRadius: 2.5,
+                            width: 44,
+                            height: 44,
+                            borderRadius: 3,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            background: 'linear-gradient(135deg, #1976D2, #26A69A)',
-                            color: '#FFFFFF',
-                            boxShadow: '0 5px 12px rgba(25, 118, 210, 0.2)'
+                            backgroundColor: 'rgba(255, 255, 255, 0.16)',
+                            border: '1px solid rgba(255, 255, 255, 0.22)',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.12)'
                         }}
                     >
-                        <LocalPharmacyIcon sx={{ fontSize: 25 }} />
+                        <LocalPharmacyIcon sx={{ fontSize: 26 }} />
                     </Box>
 
                     <Box>
@@ -76,7 +75,7 @@ export default function Navbar() {
                         <Typography
                             variant="caption"
                             sx={{
-                                color: 'text.secondary',
+                                color: 'rgba(255, 255, 255, 0.78)',
                                 display: { xs: 'none', sm: 'block' }
                             }}
                         >
@@ -85,7 +84,7 @@ export default function Navbar() {
                     </Box>
                 </Box>
 
-                {/* Navegación */}
+                {/* Menú */}
                 <Box
                     sx={{
                         display: 'flex',
@@ -103,35 +102,28 @@ export default function Navbar() {
                                 component={Link}
                                 to={item.path}
                                 sx={{
-                                    position: 'relative',
                                     height: 44,
+                                    minWidth: 'auto',
                                     px: { xs: 1.5, md: 2 },
                                     borderRadius: 2,
+                                    border: '1px solid transparent',
                                     color: activo
                                         ? '#1565C0'
-                                        : 'text.secondary',
+                                        : 'rgba(255, 255, 255, 0.9)',
                                     fontWeight: activo ? 700 : 500,
                                     backgroundColor: activo
-                                        ? '#EEF7FF'
+                                        ? '#FFFFFF'
                                         : 'transparent',
+                                    transition:
+                                        'background-color 0.2s ease, color 0.2s ease',
                                     '&:hover': {
                                         backgroundColor: activo
-                                            ? '#E3F2FD'
-                                            : '#F5F9FC',
-                                        color: '#1565C0'
-                                    },
-                                    '&::after': activo
-                                        ? {
-                                            content: '""',
-                                            position: 'absolute',
-                                            left: 12,
-                                            right: 12,
-                                            bottom: 3,
-                                            height: 3,
-                                            borderRadius: 5,
-                                            background: 'linear-gradient(90deg, #1976D2, #26A69A)'
-                                        }
-                                        : {}
+                                            ? '#FFFFFF'
+                                            : 'rgba(255, 255, 255, 0.13)',
+                                        color: activo
+                                            ? '#1565C0'
+                                            : '#FFFFFF'
+                                    }
                                 }}
                             >
                                 {item.label}
