@@ -1,6 +1,4 @@
-# backend/models/empleado.py
 from models.db import db
-
 class Empleado(db.Model):
     __tablename__ = 'empleados'
 
@@ -11,7 +9,7 @@ class Empleado(db.Model):
     email = db.Column(db.String(120), nullable=False)
     cargo = db.Column(db.String(80), nullable=False)
 
-    def to_dict(self):
+    def a_json(self):
         return {
             'id': self.id,
             'nombre': self.nombre,
