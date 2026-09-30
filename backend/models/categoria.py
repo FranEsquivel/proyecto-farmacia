@@ -5,10 +5,10 @@ class Categoria(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre = db.Column(db.String(100), nullable=False, unique=True)
     
-    medicamentos = db.relationship('Medicamento', backref='categorias', lazy=True)
+    medicamentos = db.relationship('Medicamento', backref='categoria', lazy=True)
     
     def a_json(self):
-        return{
-            'id':self.id,
-            'nombre':self.nombre
+        return {
+            'id': self.id,
+            'nombre': self.nombre
         }
