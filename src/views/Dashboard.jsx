@@ -471,12 +471,12 @@ export default function Dashboard() {
                         '&::before': {
                             content: '""',
                             position: 'absolute',
-                            width: 260,
-                            height: 260,
+                            width: 280,
+                            height: 280,
                             borderRadius: '50%',
                             background: 'rgba(255,255,255,0.08)',
-                            top: -140,
-                            right: -70
+                            top: -150,
+                            right: -50
                         },
                         '&::after': {
                             content: '""',

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+
 import { getMedicamentos, getCategorias } from '../services/api';
+
 import {
     Box,
     Typography,
@@ -21,6 +23,7 @@ import {
     DialogContent,
     DialogActions
 } from '@mui/material';
+
 import LocalPharmacyIcon from '@mui/icons-material/LocalPharmacy';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
@@ -28,6 +31,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function Medicamentos() {
+
     const [medicamentos, setMedicamentos] = useState([]);
     const [loading, setLoading] = useState(true);
     const [busqueda, setBusqueda] = useState('');
@@ -172,18 +176,382 @@ export default function Medicamentos() {
         <Box
             sx={{
                 minHeight: 'calc(100vh - 72px)',
+                position: 'relative',
+                overflow: 'hidden',
                 background:
-                    'radial-gradient(circle at 0% 0%, rgba(66, 165, 245, 0.10), transparent 30%), radial-gradient(circle at 100% 20%, rgba(38, 166, 154, 0.08), transparent 28%), #EEF4F8',
+                    'linear-gradient(135deg, #D8F3FF 0%, #E1FAF5 50%, #E9E0FA 100%)',
                 px: { xs: 2, md: 5 },
-                py: { xs: 3, md: 5 }
+                py: { xs: 3, md: 5 },
+
+                '@keyframes mover1': {
+                    '0%': {
+                        transform: 'translate(0, 0) rotate(-15deg)'
+                    },
+                    '50%': {
+                        transform: 'translate(80px, 50px) rotate(10deg)'
+                    },
+                    '100%': {
+                        transform: 'translate(0, 0) rotate(-15deg)'
+                    }
+                },
+
+                '@keyframes mover2': {
+                    '0%': {
+                        transform: 'translate(0, 0) rotate(20deg)'
+                    },
+                    '50%': {
+                        transform: 'translate(-70px, 60px) rotate(-10deg)'
+                    },
+                    '100%': {
+                        transform: 'translate(0, 0) rotate(20deg)'
+                    }
+                },
+
+                '@keyframes mover3': {
+                    '0%': {
+                        transform: 'translate(0, 0) scale(1)'
+                    },
+                    '50%': {
+                        transform: 'translate(60px, -50px) scale(1.08)'
+                    },
+                    '100%': {
+                        transform: 'translate(0, 0) scale(1)'
+                    }
+                },
+
+                '@keyframes cambiarColor1': {
+                    '0%': {
+                        backgroundColor: '#42A5F5'
+                    },
+                    '25%': {
+                        backgroundColor: '#26A69A'
+                    },
+                    '50%': {
+                        backgroundColor: '#00A896'
+                    },
+                    '75%': {
+                        backgroundColor: '#7E57C2'
+                    },
+                    '100%': {
+                        backgroundColor: '#42A5F5'
+                    }
+                },
+
+                '@keyframes cambiarColor2': {
+                    '0%': {
+                        backgroundColor: '#26A69A'
+                    },
+                    '25%': {
+                        backgroundColor: '#7E57C2'
+                    },
+                    '50%': {
+                        backgroundColor: '#42A5F5'
+                    },
+                    '75%': {
+                        backgroundColor: '#00A896'
+                    },
+                    '100%': {
+                        backgroundColor: '#26A69A'
+                    }
+                },
+
+                '@keyframes cambiarColor3': {
+                    '0%': {
+                        backgroundColor: '#7E57C2'
+                    },
+                    '25%': {
+                        backgroundColor: '#00A896'
+                    },
+                    '50%': {
+                        backgroundColor: '#42A5F5'
+                    },
+                    '75%': {
+                        backgroundColor: '#26A69A'
+                    },
+                    '100%': {
+                        backgroundColor: '#7E57C2'
+                    }
+                },
+
+                '@keyframes cambiarColor4': {
+                    '0%': {
+                        backgroundColor: '#00A896'
+                    },
+                    '25%': {
+                        backgroundColor: '#42A5F5'
+                    },
+                    '50%': {
+                        backgroundColor: '#7E57C2'
+                    },
+                    '75%': {
+                        backgroundColor: '#26A69A'
+                    },
+                    '100%': {
+                        backgroundColor: '#00A896'
+                    }
+                },
+
+                '@keyframes cambiarColor5': {
+                    '0%': {
+                        backgroundColor: '#29B6F6'
+                    },
+                    '25%': {
+                        backgroundColor: '#7E57C2'
+                    },
+                    '50%': {
+                        backgroundColor: '#26A69A'
+                    },
+                    '75%': {
+                        backgroundColor: '#42A5F5'
+                    },
+                    '100%': {
+                        backgroundColor: '#29B6F6'
+                    }
+                }
             }}
         >
+            {/* Mancha azul superior izquierda */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 280,
+                    height: 190,
+                    borderRadius: '50%',
+                    background: '#42A5F5',
+                    opacity: 0.42,
+                    filter: 'blur(8px)',
+                    top: -60,
+                    left: -70,
+                    animation:
+                        'mover1 7s ease-in-out infinite, cambiarColor1 16s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha turquesa superior derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 240,
+                    height: 180,
+                    borderRadius: '50%',
+                    background: '#26A69A',
+                    opacity: 0.38,
+                    filter: 'blur(8px)',
+                    top: 80,
+                    right: -50,
+                    animation:
+                        'mover2 8s ease-in-out infinite, cambiarColor2 19s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha violeta derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 210,
+                    height: 160,
+                    borderRadius: '50%',
+                    background: '#7E57C2',
+                    opacity: 0.32,
+                    filter: 'blur(8px)',
+                    top: '35%',
+                    right: '8%',
+                    animation:
+                        'mover3 6s ease-in-out infinite, cambiarColor3 14s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha verde derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 230,
+                    height: 160,
+                    borderRadius: '50%',
+                    background: '#00A896',
+                    opacity: 0.30,
+                    filter: 'blur(8px)',
+                    top: '48%',
+                    right: '30%',
+                    animation:
+                        'mover2 7.5s ease-in-out infinite reverse, cambiarColor4 18s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha azul inferior derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 270,
+                    height: 180,
+                    borderRadius: '50%',
+                    background: '#29B6F6',
+                    opacity: 0.36,
+                    filter: 'blur(8px)',
+                    bottom: -60,
+                    right: -60,
+                    animation:
+                        'mover1 6.5s ease-in-out infinite reverse, cambiarColor2 17s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha violeta inferior derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 200,
+                    height: 150,
+                    borderRadius: '50%',
+                    background: '#9575CD',
+                    opacity: 0.30,
+                    filter: 'blur(8px)',
+                    bottom: 50,
+                    right: '30%',
+                    animation:
+                        'mover3 8s ease-in-out infinite reverse, cambiarColor1 20s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha turquesa superior derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 190,
+                    height: 140,
+                    borderRadius: '50%',
+                    background: '#4DB6AC',
+                    opacity: 0.28,
+                    filter: 'blur(8px)',
+                    top: '25%',
+                    right: '5%',
+                    animation:
+                        'mover1 7.5s ease-in-out infinite, cambiarColor3 15s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha azul central derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 170,
+                    height: 130,
+                    borderRadius: '50%',
+                    background: '#64B5F6',
+                    opacity: 0.28,
+                    filter: 'blur(8px)',
+                    bottom: '18%',
+                    right: '38%',
+                    animation:
+                        'mover2 6s ease-in-out infinite, cambiarColor4 18s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Burbuja celeste izquierda */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 180,
+                    height: 130,
+                    borderRadius: '50%',
+                    background: '#29B6F6',
+                    opacity: 0.27,
+                    filter: 'blur(8px)',
+                    top: '18%',
+                    left: '8%',
+                    animation:
+                        'mover2 7s ease-in-out infinite, cambiarColor5 17s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Burbuja violeta izquierda */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 220,
+                    height: 150,
+                    borderRadius: '50%',
+                    background: '#7E57C2',
+                    opacity: 0.25,
+                    filter: 'blur(8px)',
+                    top: '55%',
+                    left: '18%',
+                    animation:
+                        'mover1 8s ease-in-out infinite reverse, cambiarColor3 19s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Burbuja verde inferior izquierda */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 190,
+                    height: 140,
+                    borderRadius: '50%',
+                    background: '#00A896',
+                    opacity: 0.28,
+                    filter: 'blur(8px)',
+                    bottom: '8%',
+                    left: '22%',
+                    animation:
+                        'mover3 6.5s ease-in-out infinite, cambiarColor4 16s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Burbuja pequeña central */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 145,
+                    height: 110,
+                    borderRadius: '50%',
+                    background: '#42A5F5',
+                    opacity: 0.20,
+                    filter: 'blur(8px)',
+                    top: '38%',
+                    left: '47%',
+                    animation:
+                        'mover1 9s ease-in-out infinite, cambiarColor2 18s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Burbuja pequeña inferior central */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 135,
+                    height: 105,
+                    borderRadius: '50%',
+                    background: '#7E57C2',
+                    opacity: 0.18,
+                    filter: 'blur(8px)',
+                    bottom: '12%',
+                    left: '50%',
+                    animation:
+                        'mover3 8s ease-in-out infinite reverse, cambiarColor1 20s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Contenedor principal de contenido */}
             <Box
                 sx={{
                     maxWidth: 1400,
                     mx: 'auto'
                 }}
             >
+
                 {/* Encabezado */}
                 <Box
                     sx={{
@@ -194,7 +562,7 @@ export default function Medicamentos() {
                         p: { xs: 3, md: 4.5 },
                         color: '#FFFFFF',
                         background:
-                            'linear-gradient(135deg, #1565C0 0%, #1976D2 50%, #26A69A 100%)',
+                            'linear-gradient(135deg, #00897B 0%, #00796B 45%, #1565C0 100%)',
                         boxShadow:
                             '0 14px 32px rgba(25, 118, 210, 0.22)',
                         display: 'flex',
@@ -227,7 +595,8 @@ export default function Medicamentos() {
                     <Box
                         sx={{
                             position: 'relative',
-                            zIndex: 1
+                            zIndex: 1,
+                            maxWidth: 700
                         }}
                     >
                         <Box
@@ -284,7 +653,7 @@ export default function Medicamentos() {
                             variant="body1"
                             sx={{
                                 opacity: 0.9,
-                                maxWidth: 650,
+                                maxWidth: 500,
                                 lineHeight: 1.7
                             }}
                         >
@@ -398,12 +767,9 @@ export default function Medicamentos() {
                 <TableContainer
                     component={Paper}
                     sx={{
-                        borderRadius: 3,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        boxShadow:
-                            '0 4px 14px rgba(31, 41, 55, 0.06)',
-                        overflow: 'hidden'
+                        backgroundColor: '#FFFFFF',
+                        position: 'relative',
+                        zIndex: 2
                     }}
                 >
                     <Table>
@@ -787,6 +1153,7 @@ export default function Medicamentos() {
                         </Button>
                     </DialogActions>
                 </Dialog>
+
             </Box>
         </Box>
     );

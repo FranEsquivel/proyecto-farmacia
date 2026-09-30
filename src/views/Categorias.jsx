@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+
 import { getCategorias } from '../services/api';
+
 import {
     Box,
     Typography,
@@ -17,9 +19,9 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    DialogActions,
-    InputAdornment
+    DialogActions
 } from '@mui/material';
+
 import CategoryIcon from '@mui/icons-material/Category';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
@@ -27,11 +29,11 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 export default function Categorias() {
+
     const [categorias, setCategorias] = useState([]);
     const [loading, setLoading] = useState(true);
     const [busqueda, setBusqueda] = useState('');
-
-    const [dialogoAbierto, setDialogoAbierto] = useState(false);
+    const [formularioAbierto, setFormularioAbierto] = useState(false);
 
     const [nuevaCategoria, setNuevaCategoria] = useState({
         nombre: '',
@@ -43,10 +45,10 @@ export default function Categorias() {
     useEffect(() => {
         async function cargarCategorias() {
             try {
-                const data = await getCategorias();
+                const categoriasData = await getCategorias();
 
-                if (Array.isArray(data)) {
-                    setCategorias(data);
+                if (Array.isArray(categoriasData)) {
+                    setCategorias(categoriasData);
                 }
             } catch (error) {
                 console.error('Error al cargar categorías:', error);
@@ -58,65 +60,448 @@ export default function Categorias() {
         cargarCategorias();
     }, []);
 
-    const categoriasFiltradas = categorias.filter((cat) =>
-        cat.nombre?.toLowerCase().includes(busqueda.toLowerCase())
+    // Filtrar categorías por nombre
+    const categoriasFiltradas = categorias.filter((categoria) =>
+        categoria.nombre
+            ?.toLowerCase()
+            .includes(busqueda.toLowerCase())
     );
 
-    const abrirDialogo = () => {
+    // Abrir formulario
+    const abrirFormulario = () => {
         setNuevaCategoria({
             nombre: '',
             descripcion: ''
         });
+
         setErrorNombre('');
-        setDialogoAbierto(true);
+        setFormularioAbierto(true);
     };
 
-    const cerrarDialogo = () => {
-        setDialogoAbierto(false);
+    // Cerrar formulario
+    const cerrarFormulario = () => {
+        setFormularioAbierto(false);
+
+        setNuevaCategoria({
+            nombre: '',
+            descripcion: ''
+        });
+
+        setErrorNombre('');
     };
 
-    const handleCambioCategoria = (e) => {
+    // Actualizar campos del formulario
+    const handleCambioFormulario = (e) => {
         const { name, value } = e.target;
 
-        setNuevaCategoria((anterior) => ({
-            ...anterior,
+        setNuevaCategoria({
+            ...nuevaCategoria,
             [name]: value
-        }));
+        });
 
         if (name === 'nombre') {
             setErrorNombre('');
         }
     };
 
+    // Validar y guardar categoría
     const guardarCategoria = () => {
-        if (!nuevaCategoria.nombre.trim()) {
+        const nombre = nuevaCategoria.nombre.trim();
+
+        if (!nombre) {
             setErrorNombre('El nombre es obligatorio.');
             return;
         }
 
-        const categoriaDuplicada = categorias.some(
+        const categoriaExiste = categorias.some(
             (categoria) =>
-                categoria.nombre?.trim().toLowerCase() ===
-                nuevaCategoria.nombre.trim().toLowerCase()
+                categoria.nombre?.toLowerCase() === nombre.toLowerCase()
         );
 
-        if (categoriaDuplicada) {
-            setErrorNombre('Ya existe una categoría con ese nombre.');
+        if (categoriaExiste) {
+            setErrorNombre(
+                'Ya existe una categoría con ese nombre.'
+            );
             return;
         }
 
         console.log('Categoría validada:', nuevaCategoria);
-        cerrarDialogo();
+        cerrarFormulario();
     };
 
     return (
         <Box
             sx={{
-                minHeight: '100vh',
-                backgroundColor: 'background.default',
-                p: { xs: 3, md: 5 }
+                minHeight: 'calc(100vh - 72px)',
+                position: 'relative',
+                overflow: 'hidden',
+                background:
+                    'linear-gradient(135deg, #D8F3FF 0%, #E1FAF5 50%, #E9E0FA 100%)',
+                px: { xs: 2, md: 5 },
+                py: { xs: 3, md: 5 },
+
+                '@keyframes mover1': {
+                    '0%': {
+                        transform: 'translate(0, 0) rotate(-15deg)'
+                    },
+                    '50%': {
+                        transform: 'translate(80px, 50px) rotate(10deg)'
+                    },
+                    '100%': {
+                        transform: 'translate(0, 0) rotate(-15deg)'
+                    }
+                },
+
+                '@keyframes mover2': {
+                    '0%': {
+                        transform: 'translate(0, 0) rotate(20deg)'
+                    },
+                    '50%': {
+                        transform: 'translate(-70px, 60px) rotate(-10deg)'
+                    },
+                    '100%': {
+                        transform: 'translate(0, 0) rotate(20deg)'
+                    }
+                },
+
+                '@keyframes mover3': {
+                    '0%': {
+                        transform: 'translate(0, 0) scale(1)'
+                    },
+                    '50%': {
+                        transform: 'translate(60px, -50px) scale(1.08)'
+                    },
+                    '100%': {
+                        transform: 'translate(0, 0) scale(1)'
+                    }
+                },
+
+                '@keyframes cambiarColor1': {
+                    '0%': {
+                        backgroundColor: '#42A5F5'
+                    },
+                    '25%': {
+                        backgroundColor: '#26A69A'
+                    },
+                    '50%': {
+                        backgroundColor: '#00A896'
+                    },
+                    '75%': {
+                        backgroundColor: '#7E57C2'
+                    },
+                    '100%': {
+                        backgroundColor: '#42A5F5'
+                    }
+                },
+
+                '@keyframes cambiarColor2': {
+                    '0%': {
+                        backgroundColor: '#26A69A'
+                    },
+                    '25%': {
+                        backgroundColor: '#7E57C2'
+                    },
+                    '50%': {
+                        backgroundColor: '#42A5F5'
+                    },
+                    '75%': {
+                        backgroundColor: '#00A896'
+                    },
+                    '100%': {
+                        backgroundColor: '#26A69A'
+                    }
+                },
+
+                '@keyframes cambiarColor3': {
+                    '0%': {
+                        backgroundColor: '#7E57C2'
+                    },
+                    '25%': {
+                        backgroundColor: '#00A896'
+                    },
+                    '50%': {
+                        backgroundColor: '#42A5F5'
+                    },
+                    '75%': {
+                        backgroundColor: '#26A69A'
+                    },
+                    '100%': {
+                        backgroundColor: '#7E57C2'
+                    }
+                },
+
+                '@keyframes cambiarColor4': {
+                    '0%': {
+                        backgroundColor: '#00A896'
+                    },
+                    '25%': {
+                        backgroundColor: '#42A5F5'
+                    },
+                    '50%': {
+                        backgroundColor: '#7E57C2'
+                    },
+                    '75%': {
+                        backgroundColor: '#26A69A'
+                    },
+                    '100%': {
+                        backgroundColor: '#00A896'
+                    }
+                },
+
+                '@keyframes cambiarColor5': {
+                    '0%': {
+                        backgroundColor: '#29B6F6'
+                    },
+                    '25%': {
+                        backgroundColor: '#7E57C2'
+                    },
+                    '50%': {
+                        backgroundColor: '#26A69A'
+                    },
+                    '75%': {
+                        backgroundColor: '#42A5F5'
+                    },
+                    '100%': {
+                        backgroundColor: '#29B6F6'
+                    }
+                }
             }}
         >
+            {/* Mancha azul superior izquierda */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 280,
+                    height: 190,
+                    borderRadius: '50%',
+                    background: '#42A5F5',
+                    opacity: 0.42,
+                    filter: 'blur(8px)',
+                    top: -60,
+                    left: -70,
+                    animation:
+                        'mover1 7s ease-in-out infinite, cambiarColor1 16s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha turquesa superior derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 240,
+                    height: 180,
+                    borderRadius: '50%',
+                    background: '#26A69A',
+                    opacity: 0.38,
+                    filter: 'blur(8px)',
+                    top: 80,
+                    right: -50,
+                    animation:
+                        'mover2 8s ease-in-out infinite, cambiarColor2 19s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha violeta derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 210,
+                    height: 160,
+                    borderRadius: '50%',
+                    background: '#7E57C2',
+                    opacity: 0.32,
+                    filter: 'blur(8px)',
+                    top: '35%',
+                    right: '8%',
+                    animation:
+                        'mover3 6s ease-in-out infinite, cambiarColor3 14s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha verde derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 230,
+                    height: 160,
+                    borderRadius: '50%',
+                    background: '#00A896',
+                    opacity: 0.30,
+                    filter: 'blur(8px)',
+                    top: '48%',
+                    right: '30%',
+                    animation:
+                        'mover2 7.5s ease-in-out infinite reverse, cambiarColor4 18s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha azul inferior derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 270,
+                    height: 180,
+                    borderRadius: '50%',
+                    background: '#29B6F6',
+                    opacity: 0.36,
+                    filter: 'blur(8px)',
+                    bottom: -60,
+                    right: -60,
+                    animation:
+                        'mover1 6.5s ease-in-out infinite reverse, cambiarColor2 17s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha violeta inferior derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 200,
+                    height: 150,
+                    borderRadius: '50%',
+                    background: '#9575CD',
+                    opacity: 0.30,
+                    filter: 'blur(8px)',
+                    bottom: 50,
+                    right: '30%',
+                    animation:
+                        'mover3 8s ease-in-out infinite reverse, cambiarColor1 20s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha turquesa superior derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 190,
+                    height: 140,
+                    borderRadius: '50%',
+                    background: '#4DB6AC',
+                    opacity: 0.28,
+                    filter: 'blur(8px)',
+                    top: '25%',
+                    right: '5%',
+                    animation:
+                        'mover1 7.5s ease-in-out infinite, cambiarColor3 15s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Mancha azul central derecha */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 170,
+                    height: 130,
+                    borderRadius: '50%',
+                    background: '#64B5F6',
+                    opacity: 0.28,
+                    filter: 'blur(8px)',
+                    bottom: '18%',
+                    right: '38%',
+                    animation:
+                        'mover2 6s ease-in-out infinite, cambiarColor4 18s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Burbuja celeste izquierda */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 180,
+                    height: 130,
+                    borderRadius: '50%',
+                    background: '#29B6F6',
+                    opacity: 0.27,
+                    filter: 'blur(8px)',
+                    top: '18%',
+                    left: '8%',
+                    animation:
+                        'mover2 7s ease-in-out infinite, cambiarColor5 17s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Burbuja violeta izquierda */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 220,
+                    height: 150,
+                    borderRadius: '50%',
+                    background: '#7E57C2',
+                    opacity: 0.25,
+                    filter: 'blur(8px)',
+                    top: '55%',
+                    left: '18%',
+                    animation:
+                        'mover1 8s ease-in-out infinite reverse, cambiarColor3 19s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Burbuja verde inferior izquierda */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 190,
+                    height: 140,
+                    borderRadius: '50%',
+                    background: '#00A896',
+                    opacity: 0.28,
+                    filter: 'blur(8px)',
+                    bottom: '8%',
+                    left: '22%',
+                    animation:
+                        'mover3 6.5s ease-in-out infinite, cambiarColor4 16s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Burbuja pequeña central */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 145,
+                    height: 110,
+                    borderRadius: '50%',
+                    background: '#42A5F5',
+                    opacity: 0.20,
+                    filter: 'blur(8px)',
+                    top: '38%',
+                    left: '47%',
+                    animation:
+                        'mover1 9s ease-in-out infinite, cambiarColor2 18s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Burbuja pequeña inferior central */}
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: 135,
+                    height: 105,
+                    borderRadius: '50%',
+                    background: '#7E57C2',
+                    opacity: 0.18,
+                    filter: 'blur(8px)',
+                    bottom: '12%',
+                    left: '50%',
+                    animation:
+                        'mover3 8s ease-in-out infinite reverse, cambiarColor1 20s ease-in-out infinite',
+                    pointerEvents: 'none'
+                }}
+            />
+
+            {/* Contenedor principal de contenido */}
             <Box
                 sx={{
                     maxWidth: 1400,
@@ -126,127 +511,229 @@ export default function Categorias() {
                 {/* Encabezado */}
                 <Box
                     sx={{
-                        mb: 4,
+                        mb: 5,
+                        position: 'relative',
+                        overflow: 'hidden',
+                        borderRadius: 5,
+                        p: { xs: 3, md: 4.5 },
+                        color: '#FFFFFF',
+                        background:
+                            'linear-gradient(135deg, #00897B 0%, #00796B 45%, #1565C0 100%)',
+                        boxShadow:
+                            '0 14px 32px rgba(25, 118, 210, 0.22)',
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: { xs: 'flex-start', md: 'center' },
                         flexDirection: { xs: 'column', md: 'row' },
-                        gap: 2
+                        gap: 3,
+                        '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            width: 280,
+                            height: 280,
+                            borderRadius: '50%',
+                            background: 'rgba(255, 255, 255, 0.08)',
+                            top: -150,
+                            right: -50
+                        },
+                        '&::after': {
+                            content: '""',
+                            position: 'absolute',
+                            width: 180,
+                            height: 180,
+                            borderRadius: '50%',
+                            background: 'rgba(255, 255, 255, 0.06)',
+                            bottom: -100,
+                            right: 180
+                        }
                     }}
                 >
-                    <Box>
+                    <Box
+                        sx={{
+                            position: 'relative',
+                            zIndex: 1
+                        }}
+                    >
                         <Box
                             sx={{
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 1.5,
-                                mb: 0.5
+                                mb: 2
                             }}
                         >
                             <Box
                                 sx={{
-                                    width: 48,
-                                    height: 48,
+                                    width: 50,
+                                    height: 50,
                                     borderRadius: 3,
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    background:
-                                        'linear-gradient(135deg, #26A69A, #00A896)',
-                                    color: '#FFFFFF',
-                                    boxShadow:
-                                        '0 6px 14px rgba(0, 168, 150, 0.18)'
+                                    backgroundColor:
+                                        'rgba(255, 255, 255, 0.16)',
+                                    border:
+                                        '1px solid rgba(255, 255, 255, 0.22)'
                                 }}
                             >
-                                <CategoryIcon sx={{ fontSize: 27 }} />
+                                <CategoryIcon sx={{ fontSize: 28 }} />
                             </Box>
 
-                            <Box>
-                                <Typography
-                                    variant="h4"
-                                    component="h1"
-                                    sx={{
-                                        fontWeight: 700,
-                                        lineHeight: 1.15
-                                    }}
-                                >
-                                    Gestión de Categorías
-                                </Typography>
-
-                                <Typography
-                                    variant="body2"
-                                    sx={{
-                                        color: 'text.secondary',
-                                        mt: 0.4
-                                    }}
-                                >
-                                    Organiza las categorías de los medicamentos.
-                                </Typography>
-                            </Box>
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    fontWeight: 600,
+                                    opacity: 0.9,
+                                    letterSpacing: 0.4
+                                }}
+                            >
+                                Gestión farmacéutica
+                            </Typography>
                         </Box>
+
+                        <Typography
+                            variant="h4"
+                            component="h1"
+                            sx={{
+                                fontWeight: 700,
+                                mb: 1
+                            }}
+                        >
+                            Categorías
+                        </Typography>
+
+                        <Typography
+                            variant="body1"
+                            sx={{
+                                opacity: 0.9,
+                                maxWidth: 650,
+                                lineHeight: 1.7
+                            }}
+                        >
+                            Organizá y administrá las categorías de los
+                            medicamentos de la farmacia.
+                        </Typography>
                     </Box>
 
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
-                        onClick={abrirDialogo}
+                        onClick={abrirFormulario}
                         sx={{
-                            background:
-                                'linear-gradient(135deg, #1976D2, #26A69A)',
+                            position: 'relative',
+                            zIndex: 1,
+                            flexShrink: 0,
+                            color: '#1565C0',
+                            backgroundColor: '#FFFFFF',
+                            px: 2.5,
+                            py: 1.2,
+                            borderRadius: 2,
                             boxShadow:
-                                '0 6px 14px rgba(25, 118, 210, 0.18)',
+                                '0 6px 16px rgba(0, 0, 0, 0.16)',
                             '&:hover': {
-                                background:
-                                    'linear-gradient(135deg, #1565C0, #00897B)',
+                                backgroundColor: '#F4F9FD',
                                 boxShadow:
-                                    '0 8px 18px rgba(25, 118, 210, 0.24)'
+                                    '0 8px 20px rgba(0, 0, 0, 0.2)'
                             }
                         }}
                     >
-                        Nueva Categoría
+                        Nueva categoría
                     </Button>
                 </Box>
 
-                {/* Búsqueda */}
+                {/* Barra de búsqueda */}
                 <Paper
                     sx={{
                         p: 2,
                         mb: 3,
+                        borderRadius: 3,
                         border: '1px solid',
-                        borderColor: 'divider'
+                        borderColor: 'divider',
+                        boxShadow:
+                            '0 2px 8px rgba(31, 41, 55, 0.04)'
                     }}
                 >
-                    <TextField
-                        fullWidth
-                        placeholder="Buscar categorías por nombre..."
-                        value={busqueda}
-                        onChange={(e) => setBusqueda(e.target.value)}
-                        InputProps={{
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon color="action" />
-                                </InputAdornment>
-                            )
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 2
                         }}
-                    />
+                    >
+                        <TextField
+                            fullWidth
+                            variant="outlined"
+                            placeholder="Buscar categoría por nombre..."
+                            value={busqueda}
+                            onChange={(e) =>
+                                setBusqueda(e.target.value)
+                            }
+                            InputProps={{
+                                startAdornment: (
+                                    <SearchIcon
+                                        sx={{
+                                            color: 'primary.main',
+                                            mr: 1
+                                        }}
+                                    />
+                                )
+                            }}
+                        />
+                    </Box>
                 </Paper>
 
-                {/* Tabla */}
+                {/* Tabla de datos */}
                 <TableContainer
                     component={Paper}
                     sx={{
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        overflow: 'hidden'
+                        backgroundColor: '#FFFFFF',
+                        position: 'relative',
+                        zIndex: 2
                     }}
                 >
                     <Table>
                         <TableHead>
-                            <TableRow>
-                                <TableCell>ID</TableCell>
-                                <TableCell>Nombre</TableCell>
-                                <TableCell>Descripción</TableCell>
-                                <TableCell align="center">
+                            <TableRow
+                                sx={{
+                                    background:
+                                        'linear-gradient(90deg, #EAF4FF 0%, #ECFAF7 100%)'
+                                }}
+                            >
+                                <TableCell
+                                    sx={{
+                                        fontWeight: 700,
+                                        color: '#1565C0',
+                                        py: 2
+                                    }}
+                                >
+                                    ID
+                                </TableCell>
+
+                                <TableCell
+                                    sx={{
+                                        fontWeight: 700,
+                                        color: '#1565C0'
+                                    }}
+                                >
+                                    Nombre
+                                </TableCell>
+
+                                <TableCell
+                                    sx={{
+                                        fontWeight: 700,
+                                        color: '#00897B'
+                                    }}
+                                >
+                                    Descripción
+                                </TableCell>
+
+                                <TableCell
+                                    align="center"
+                                    sx={{
+                                        fontWeight: 700,
+                                        color: '#7E57C2'
+                                    }}
+                                >
                                     Acciones
                                 </TableCell>
                             </TableRow>
@@ -258,19 +745,14 @@ export default function Categorias() {
                                     <TableCell
                                         colSpan={4}
                                         align="center"
-                                        sx={{ py: 7 }}
+                                        sx={{ py: 6 }}
                                     >
-                                        <CircularProgress
-                                            size={34}
-                                            color="primary"
-                                        />
+                                        <CircularProgress color="primary" />
 
                                         <Typography
                                             variant="body2"
-                                            sx={{
-                                                color: 'text.secondary',
-                                                mt: 1.5
-                                            }}
+                                            color="text.secondary"
+                                            sx={{ mt: 1 }}
                                         >
                                             Cargando categorías...
                                         </Typography>
@@ -281,109 +763,91 @@ export default function Categorias() {
                                     <TableCell
                                         colSpan={4}
                                         align="center"
-                                        sx={{ py: 7 }}
+                                        sx={{ py: 6 }}
                                     >
-                                        <CategoryIcon
-                                            sx={{
-                                                fontSize: 42,
-                                                color: 'text.disabled',
-                                                mb: 1
-                                            }}
-                                        />
-
-                                        <Typography
-                                            variant="body1"
-                                            sx={{
-                                                fontWeight: 600,
-                                                color: 'text.primary'
-                                            }}
-                                        >
+                                        <Typography color="text.secondary">
                                             No se encontraron categorías
-                                        </Typography>
-
-                                        <Typography
-                                            variant="body2"
-                                            sx={{
-                                                color: 'text.secondary',
-                                                mt: 0.5
-                                            }}
-                                        >
-                                            {busqueda
-                                                ? 'Probá con otro término de búsqueda.'
-                                                : 'Todavía no hay categorías disponibles.'}
+                                            registradas.
                                         </Typography>
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                categoriasFiltradas.map((cat) => (
+                                categoriasFiltradas.map((categoria) => (
                                     <TableRow
-                                        key={cat.id}
-                                        hover
+                                        key={categoria.id}
+                                        sx={{
+                                            transition:
+                                                'background-color 0.2s ease',
+                                            '&:hover': {
+                                                backgroundColor: '#F5FAFC'
+                                            },
+                                            '&:last-child td': {
+                                                borderBottom: 0
+                                            }
+                                        }}
                                     >
-                                        <TableCell
-                                            sx={{
-                                                color: 'text.secondary',
-                                                fontFamily: 'monospace'
-                                            }}
-                                        >
-                                            #{cat.id}
+                                        <TableCell>
+                                            <Typography
+                                                variant="body2"
+                                                sx={{
+                                                    fontFamily: 'monospace',
+                                                    fontWeight: 600,
+                                                    color: 'text.secondary'
+                                                }}
+                                            >
+                                                #{categoria.id}
+                                            </Typography>
                                         </TableCell>
 
                                         <TableCell>
-                                            <Box
+                                            <Typography
                                                 sx={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 1.2
+                                                    fontWeight: 700,
+                                                    color: 'text.primary'
                                                 }}
                                             >
-                                                <Box
-                                                    sx={{
-                                                        width: 34,
-                                                        height: 34,
-                                                        borderRadius: 2,
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        backgroundColor: '#E8F8F5',
-                                                        color: '#00897B'
-                                                    }}
-                                                >
-                                                    <CategoryIcon
-                                                        sx={{ fontSize: 19 }}
-                                                    />
-                                                </Box>
-
-                                                <Typography
-                                                    sx={{
-                                                        fontWeight: 600
-                                                    }}
-                                                >
-                                                    {cat.nombre}
-                                                </Typography>
-                                            </Box>
+                                                {categoria.nombre}
+                                            </Typography>
                                         </TableCell>
 
-                                        <TableCell
-                                            sx={{
-                                                color: 'text.secondary'
-                                            }}
-                                        >
-                                            {cat.descripcion ||
-                                                'Sin descripción'}
+                                        <TableCell>
+                                            <Typography
+                                                variant="body2"
+                                                sx={{
+                                                    color: 'text.secondary',
+                                                    maxWidth: 500
+                                                }}
+                                            >
+                                                {categoria.descripcion}
+                                            </Typography>
                                         </TableCell>
 
                                         <TableCell align="center">
                                             <IconButton
                                                 size="small"
-                                                color="primary"
+                                                sx={{
+                                                    color: '#1976D2',
+                                                    backgroundColor: '#EEF7FF',
+                                                    mr: 0.5,
+                                                    '&:hover': {
+                                                        backgroundColor:
+                                                            '#DCEEFF'
+                                                    }
+                                                }}
                                             >
                                                 <EditIcon fontSize="small" />
                                             </IconButton>
 
                                             <IconButton
                                                 size="small"
-                                                color="error"
+                                                sx={{
+                                                    color: '#D32F2F',
+                                                    backgroundColor: '#FFF1F1',
+                                                    '&:hover': {
+                                                        backgroundColor:
+                                                            '#FFE0E0'
+                                                    }
+                                                }}
                                             >
                                                 <DeleteIcon fontSize="small" />
                                             </IconButton>
@@ -394,72 +858,79 @@ export default function Categorias() {
                         </TableBody>
                     </Table>
                 </TableContainer>
-            </Box>
 
-            {/* Dialog */}
-            <Dialog
-                open={dialogoAbierto}
-                onClose={cerrarDialogo}
-                fullWidth
-                maxWidth="sm"
-            >
-                <DialogTitle
-                    sx={{
-                        fontWeight: 700
-                    }}
+                {/* Formulario de nueva categoría */}
+                <Dialog
+                    open={formularioAbierto}
+                    onClose={cerrarFormulario}
+                    fullWidth
+                    maxWidth="sm"
                 >
-                    Nueva Categoría
-                </DialogTitle>
-
-                <DialogContent>
-                    <TextField
-                        fullWidth
-                        label="Nombre"
-                        name="nombre"
-                        value={nuevaCategoria.nombre}
-                        onChange={handleCambioCategoria}
-                        error={Boolean(errorNombre)}
-                        helperText={errorNombre}
-                        margin="normal"
-                        autoFocus
-                    />
-
-                    <TextField
-                        fullWidth
-                        label="Descripción"
-                        name="descripcion"
-                        value={nuevaCategoria.descripcion}
-                        onChange={handleCambioCategoria}
-                        multiline
-                        rows={3}
-                        margin="normal"
-                    />
-                </DialogContent>
-
-                <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button
-                        onClick={cerrarDialogo}
-                        color="inherit"
-                    >
-                        Cancelar
-                    </Button>
-
-                    <Button
-                        onClick={guardarCategoria}
-                        variant="contained"
+                    <DialogTitle
                         sx={{
-                            background: 'linear-gradient(135deg, #1976D2, #26A69A)',
-                            boxShadow: '0 5px 12px rgba(25, 118, 210, 0.18)',
-                            '&:hover': {
-                                background: 'linear-gradient(135deg, #1565C0, #00897B)',
-                                boxShadow: '0 7px 16px rgba(25, 118, 210, 0.24)'
-                            }
+                            fontWeight: 700,
+                            pb: 1
                         }}
                     >
-                        Guardar
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                        Nueva categoría
+                    </DialogTitle>
+
+                    <DialogContent>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 2,
+                                pt: 1
+                            }}
+                        >
+                            <TextField
+                                label="Nombre"
+                                name="nombre"
+                                value={nuevaCategoria.nombre}
+                                onChange={handleCambioFormulario}
+                                error={Boolean(errorNombre)}
+                                helperText={errorNombre}
+                                fullWidth
+                            />
+
+                            <TextField
+                                label="Descripción"
+                                name="descripcion"
+                                value={nuevaCategoria.descripcion}
+                                onChange={handleCambioFormulario}
+                                multiline
+                                rows={3}
+                                fullWidth
+                            />
+                        </Box>
+                    </DialogContent>
+
+                    <DialogActions
+                        sx={{
+                            px: 3,
+                            pb: 3
+                        }}
+                    >
+                        <Button
+                            onClick={cerrarFormulario}
+                            sx={{
+                                color: 'text.secondary'
+                            }}
+                        >
+                            Cancelar
+                        </Button>
+
+                        <Button
+                            variant="contained"
+                            disabled
+                            startIcon={<AddIcon />}
+                        >
+                            Guardar categoría
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+            </Box>
         </Box>
     );
 }

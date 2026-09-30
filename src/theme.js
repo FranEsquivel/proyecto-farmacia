@@ -180,6 +180,9 @@ const theme = createTheme({
 
                         '&.Mui-focused fieldset': {
                             borderWidth: 2
+                        },
+                        '& .MuiOutlinedInput-input': {
+                        caretColor: '#1F2D24'
                         }
                     }
                 }
