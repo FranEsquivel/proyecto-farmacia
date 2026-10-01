@@ -90,12 +90,21 @@ const theme = createTheme({
         MuiCssBaseline: {
             styleOverrides: {
                 html: {
-                    overflowY: 'scroll'
+                    overflowY: 'scroll',
+                    width: '100%',
+                    overflowX: 'hidden'
                 },
 
                 body: {
                     backgroundColor: '#E8F3EA',
-                    color: '#1F2D24'
+                    color: '#1F2D24',
+                    width: '100%',
+                    overflowX: 'hidden'
+                },
+
+                '#root': {
+                    width: '100%',
+                    minWidth: 0
                 }
             }
         },
