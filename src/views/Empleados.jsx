@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import { getEmpleados } from '../services/api';
+import {
+    getEmpleados,
+    crearEmpleado,
+    actualizarEmpleado,
+    eliminarEmpleado
+} from '../services/api';
 
 import {
     Box,
@@ -16,7 +21,12 @@ import {
     Paper,
     CircularProgress,
     IconButton,
-    Chip
+    Chip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions
+
 } from '@mui/material';
 
 import PeopleIcon from '@mui/icons-material/People';
@@ -29,6 +39,19 @@ export default function Empleados() {
     const [empleados, setEmpleados] = useState([]);
     const [loading, setLoading] = useState(true);
     const [busqueda, setBusqueda] = useState('');
+    const [formularioAbierto, setFormularioAbierto] = useState(false);
+
+    const [empleadoEditando, setEmpleadoEditando] = useState(null);
+
+    const [nuevoEmpleado, setNuevoEmpleado] = useState({
+        nombre: '',
+        apellido: '',
+        dni: '',
+        email: '',
+        cargo: ''
+    });
+
+    const [erroresFormulario, setErroresFormulario] = useState({});
 
     useEffect(() => {
         async function cargarEmpleados() {
@@ -55,9 +78,155 @@ export default function Empleados() {
 
         return (
             nombreCompleto.includes(busqueda.toLowerCase()) ||
-            emp.puesto?.toLowerCase().includes(busqueda.toLowerCase())
+            emp.cargo?.toLowerCase().includes(busqueda.toLowerCase())
         );
     });
+
+    const abrirFormulario = () => {
+        setNuevoEmpleado({
+            nombre: '',
+            apellido: '',
+            dni: '',
+            email: '',
+            cargo: ''
+        });
+
+        setErroresFormulario({});
+        setEmpleadoEditando(null);
+        setFormularioAbierto(true);
+    };
+
+    const cerrarFormulario = () => {
+        setFormularioAbierto(false);
+
+        setNuevoEmpleado({
+            nombre: '',
+            apellido: '',
+            dni: '',
+            email: '',
+            cargo: ''
+        });
+
+        setErroresFormulario({});
+        setEmpleadoEditando(null);
+    };
+
+    const handleCambioFormulario = (e) => {
+        const { name, value } = e.target;
+
+        setNuevoEmpleado({
+            ...nuevoEmpleado,
+            [name]: value
+        });
+
+        setErroresFormulario({
+            ...erroresFormulario,
+            [name]: ''
+        });
+    };
+
+    const validarFormulario = () => {
+        const errores = {};
+
+        if (!nuevoEmpleado.nombre.trim()) {
+            errores.nombre = 'El nombre es obligatorio.';
+        }
+
+        if (!nuevoEmpleado.apellido.trim()) {
+            errores.apellido = 'El apellido es obligatorio.';
+        }
+
+        if (!nuevoEmpleado.dni.trim()) {
+            errores.dni = 'El DNI es obligatorio.';
+        }
+
+        if (!nuevoEmpleado.email.trim()) {
+            errores.email = 'El email es obligatorio.';
+        } else if (
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                nuevoEmpleado.email
+            )
+        ) {
+            errores.email = 'El email no es válido.';
+        }
+
+        if (!nuevoEmpleado.cargo.trim()) {
+            errores.cargo = 'El cargo es obligatorio.';
+        }
+
+        setErroresFormulario(errores);
+
+        return Object.keys(errores).length === 0;
+    };
+
+    const editarEmpleado = (empleado) => {
+        setEmpleadoEditando(empleado);
+
+        setNuevoEmpleado({
+            nombre: empleado.nombre,
+            apellido: empleado.apellido,
+            dni: empleado.dni,
+            email: empleado.email,
+            cargo: empleado.cargo
+        });
+
+        setErroresFormulario({});
+        setFormularioAbierto(true);
+    };
+
+    const guardarEmpleado = async () => {
+        if (!validarFormulario()) {
+            return;
+        }
+
+        const datosEmpleado = {
+            nombre: nuevoEmpleado.nombre.trim(),
+            apellido: nuevoEmpleado.apellido.trim(),
+            dni: nuevoEmpleado.dni.trim(),
+            email: nuevoEmpleado.email.trim(),
+            cargo: nuevoEmpleado.cargo.trim()
+        };
+
+        try {
+            if (empleadoEditando) {
+                const resultado = await actualizarEmpleado(
+                    empleadoEditando.id,
+                    datosEmpleado
+                );
+
+                setEmpleados(
+                    empleados.map((empleado) =>
+                        empleado.id === empleadoEditando.id
+                            ? resultado.empleado
+                            : empleado
+                    )
+                );
+            } else {
+                const resultado = await crearEmpleado(datosEmpleado);
+
+                setEmpleados([
+                    ...empleados,
+                    resultado.empleado
+                ]);
+            }
+
+            cerrarFormulario();
+        } catch (error) {
+            console.error('Error al guardar empleado:', error);
+        }
+    };
+
+    const borrarEmpleado = async (id) => {
+        try {
+            await eliminarEmpleado(id);
+
+            setEmpleados(
+                empleados.filter((empleado) => empleado.id !== id)
+            );
+        } catch (error) {
+            console.error('Error al eliminar empleado:', error);
+        }
+    };
 
     return (
         <Box
@@ -555,6 +724,7 @@ export default function Empleados() {
 
                     <Button
                         variant="contained"
+                        onClick={abrirFormulario}
                         startIcon={<AddIcon />}
                         sx={{
                             position: 'relative',
@@ -610,7 +780,7 @@ export default function Empleados() {
                             onChange={(e) =>
                                 setBusqueda(e.target.value)
                             }
-                            
+
                             InputProps={{
                                 startAdornment: (
                                     <SearchIcon
@@ -765,7 +935,7 @@ export default function Empleados() {
                                         <TableCell>
                                             <Chip
                                                 label={
-                                                    emp.puesto || 'General'
+                                                    emp.cargo || 'General'
                                                 }
                                                 size="small"
                                                 color="primary"
@@ -784,15 +954,14 @@ export default function Empleados() {
                                                     color: 'text.secondary'
                                                 }}
                                             >
-                                                {emp.email ||
-                                                    emp.telefono ||
-                                                    'Sin contacto'}
+                                                {emp.email || 'Sin contacto'}
                                             </Typography>
                                         </TableCell>
 
                                         <TableCell align="center">
                                             <IconButton
                                                 size="small"
+                                                onClick={() => editarEmpleado(emp)}
                                                 sx={{
                                                     color: '#1976D2',
                                                     backgroundColor: '#EEF7FF',
@@ -808,6 +977,7 @@ export default function Empleados() {
 
                                             <IconButton
                                                 size="small"
+                                                onClick={() => borrarEmpleado(emp.id)}
                                                 sx={{
                                                     color: '#D32F2F',
                                                     backgroundColor: '#FFF1F1',
@@ -827,6 +997,110 @@ export default function Empleados() {
                     </Table>
                 </TableContainer>
             </Box>
+            <Dialog
+                open={formularioAbierto}
+                onClose={cerrarFormulario}
+                fullWidth
+                maxWidth="sm"
+            >
+                <DialogTitle
+                    sx={{
+                        fontWeight: 700
+                    }}
+                >
+                    {empleadoEditando
+                        ? 'Editar empleado'
+                        : 'Nuevo empleado'}
+                </DialogTitle>
+
+                <DialogContent>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 2,
+                            pt: 1
+                        }}
+                    >
+                        <TextField
+                            label="Nombre"
+                            name="nombre"
+                            value={nuevoEmpleado.nombre}
+                            onChange={handleCambioFormulario}
+                            error={Boolean(erroresFormulario.nombre)}
+                            helperText={erroresFormulario.nombre}
+                            fullWidth
+                        />
+
+                        <TextField
+                            label="Apellido"
+                            name="apellido"
+                            value={nuevoEmpleado.apellido}
+                            onChange={handleCambioFormulario}
+                            error={Boolean(erroresFormulario.apellido)}
+                            helperText={erroresFormulario.apellido}
+                            fullWidth
+                        />
+
+                        <TextField
+                            label="DNI"
+                            name="dni"
+                            value={nuevoEmpleado.dni}
+                            onChange={handleCambioFormulario}
+                            error={Boolean(erroresFormulario.dni)}
+                            helperText={erroresFormulario.dni}
+                            fullWidth
+                        />
+
+                        <TextField
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={nuevoEmpleado.email}
+                            onChange={handleCambioFormulario}
+                            error={Boolean(erroresFormulario.email)}
+                            helperText={erroresFormulario.email}
+                            fullWidth
+                        />
+
+                        <TextField
+                            label="Cargo"
+                            name="cargo"
+                            value={nuevoEmpleado.cargo}
+                            onChange={handleCambioFormulario}
+                            error={Boolean(erroresFormulario.cargo)}
+                            helperText={erroresFormulario.cargo}
+                            fullWidth
+                        />
+                    </Box>
+                </DialogContent>
+
+                <DialogActions
+                    sx={{
+                        px: 3,
+                        pb: 3
+                    }}
+                >
+                    <Button
+                        onClick={cerrarFormulario}
+                        sx={{
+                            color: 'text.secondary'
+                        }}
+                    >
+                        Cancelar
+                    </Button>
+
+                    <Button
+                        variant="contained"
+                        onClick={guardarEmpleado}
+                        startIcon={<AddIcon />}
+                    >
+                        {empleadoEditando
+                            ? 'Guardar cambios'
+                            : 'Guardar empleado'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 }

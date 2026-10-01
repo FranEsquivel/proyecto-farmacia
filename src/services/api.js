@@ -176,3 +176,74 @@ export const getEmpleados = async () => {
         return [];
     }
 };
+
+export const crearEmpleado = async (empleado) => {
+    try {
+        const response = await fetch(`${API_URL}/empleados`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(empleado)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || 'Error al crear empleado'
+            );
+        }
+
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
+export const actualizarEmpleado = async (id, empleado) => {
+    try {
+        const response = await fetch(`${API_URL}/empleados/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(empleado)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || 'Error al actualizar empleado'
+            );
+        }
+
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
+export const eliminarEmpleado = async (id) => {
+    try {
+        const response = await fetch(`${API_URL}/empleados/${id}`, {
+            method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || 'Error al eliminar empleado'
+            );
+        }
+
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
