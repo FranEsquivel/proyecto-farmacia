@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { getCategorias } from '../services/api';
+import { getCategorias, crearCategoria, actualizarCategoria, eliminarCategoria } from '../services/api';
 
 import {
     Box,
@@ -34,10 +34,10 @@ export default function Categorias() {
     const [loading, setLoading] = useState(true);
     const [busqueda, setBusqueda] = useState('');
     const [formularioAbierto, setFormularioAbierto] = useState(false);
+    const [categoriaEditando, setCategoriaEditando] = useState(null);
 
     const [nuevaCategoria, setNuevaCategoria] = useState({
-        nombre: '',
-        descripcion: ''
+        nombre: ''
     });
 
     const [errorNombre, setErrorNombre] = useState('');
@@ -70,24 +70,21 @@ export default function Categorias() {
     // Abrir formulario
     const abrirFormulario = () => {
         setNuevaCategoria({
-            nombre: '',
-            descripcion: ''
+            nombre: ''
         });
-
         setErrorNombre('');
+        setCategoriaEditando(null);
         setFormularioAbierto(true);
     };
 
     // Cerrar formulario
     const cerrarFormulario = () => {
         setFormularioAbierto(false);
-
         setNuevaCategoria({
-            nombre: '',
-            descripcion: ''
+            nombre: ''
         });
-
         setErrorNombre('');
+        setCategoriaEditando(null);
     };
 
     // Actualizar campos del formulario
@@ -104,8 +101,31 @@ export default function Categorias() {
         }
     };
 
+    const editarCategoria = (categoria) => {
+        setCategoriaEditando(categoria);
+
+        setNuevaCategoria({
+            nombre: categoria.nombre
+        });
+
+        setErrorNombre('');
+        setFormularioAbierto(true);
+    };
+
+    const borrarCategoria = async (id) => {
+        try {
+            await eliminarCategoria(id);
+
+            setCategorias(
+                categorias.filter((categoria) => categoria.id !== id)
+            );
+        } catch (error) {
+            console.error('Error al eliminar categoría:', error);
+        }
+    };
+
     // Validar y guardar categoría
-    const guardarCategoria = () => {
+    const guardarCategoria = async () => {
         const nombre = nuevaCategoria.nombre.trim();
 
         if (!nombre) {
@@ -115,7 +135,8 @@ export default function Categorias() {
 
         const categoriaExiste = categorias.some(
             (categoria) =>
-                categoria.nombre?.toLowerCase() === nombre.toLowerCase()
+                categoria.nombre?.toLowerCase() === nombre.toLowerCase() &&
+                categoria.id !== categoriaEditando?.id
         );
 
         if (categoriaExiste) {
@@ -125,8 +146,35 @@ export default function Categorias() {
             return;
         }
 
-        console.log('Categoría validada:', nuevaCategoria);
-        cerrarFormulario();
+        try {
+            if (categoriaEditando) {
+                const resultado = await actualizarCategoria(
+                    categoriaEditando.id,
+                    { nombre }
+                );
+
+                setCategorias(
+                    categorias.map((categoria) =>
+                        categoria.id === categoriaEditando.id
+                            ? resultado.categoria
+                            : categoria
+                    )
+                );
+            } else {
+                const resultado = await crearCategoria({
+                    nombre
+                });
+
+                setCategorias([
+                    ...categorias,
+                    resultado.categoria
+                ]);
+            }
+
+            cerrarFormulario();
+        } catch (error) {
+            console.error('Error al guardar categoría:', error);
+        }
     };
 
     return (
@@ -719,15 +767,6 @@ export default function Categorias() {
                                 </TableCell>
 
                                 <TableCell
-                                    sx={{
-                                        fontWeight: 700,
-                                        color: '#00897B'
-                                    }}
-                                >
-                                    Descripción
-                                </TableCell>
-
-                                <TableCell
                                     align="center"
                                     sx={{
                                         fontWeight: 700,
@@ -743,7 +782,7 @@ export default function Categorias() {
                             {loading ? (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={4}
+                                        colSpan={3}
                                         align="center"
                                         sx={{ py: 6 }}
                                     >
@@ -761,7 +800,7 @@ export default function Categorias() {
                             ) : categoriasFiltradas.length === 0 ? (
                                 <TableRow>
                                     <TableCell
-                                        colSpan={4}
+                                        colSpan={3}
                                         align="center"
                                         sx={{ py: 6 }}
                                     >
@@ -810,21 +849,10 @@ export default function Categorias() {
                                             </Typography>
                                         </TableCell>
 
-                                        <TableCell>
-                                            <Typography
-                                                variant="body2"
-                                                sx={{
-                                                    color: 'text.secondary',
-                                                    maxWidth: 500
-                                                }}
-                                            >
-                                                {categoria.descripcion}
-                                            </Typography>
-                                        </TableCell>
-
                                         <TableCell align="center">
                                             <IconButton
                                                 size="small"
+                                                onClick={() => editarCategoria(categoria)}
                                                 sx={{
                                                     color: '#1976D2',
                                                     backgroundColor: '#EEF7FF',
@@ -840,6 +868,7 @@ export default function Categorias() {
 
                                             <IconButton
                                                 size="small"
+                                                onClick={() => borrarCategoria(categoria.id)}
                                                 sx={{
                                                     color: '#D32F2F',
                                                     backgroundColor: '#FFF1F1',
@@ -872,7 +901,9 @@ export default function Categorias() {
                             pb: 1
                         }}
                     >
-                        Nueva categoría
+                        {categoriaEditando
+                            ? 'Editar categoría'
+                            : 'Nueva categoría'}
                     </DialogTitle>
 
                     <DialogContent>
@@ -894,15 +925,6 @@ export default function Categorias() {
                                 fullWidth
                             />
 
-                            <TextField
-                                label="Descripción"
-                                name="descripcion"
-                                value={nuevaCategoria.descripcion}
-                                onChange={handleCambioFormulario}
-                                multiline
-                                rows={3}
-                                fullWidth
-                            />
                         </Box>
                     </DialogContent>
 
@@ -923,7 +945,7 @@ export default function Categorias() {
 
                         <Button
                             variant="contained"
-                            disabled
+                            onClick={guardarCategoria}
                             startIcon={<AddIcon />}
                         >
                             Guardar categoría
