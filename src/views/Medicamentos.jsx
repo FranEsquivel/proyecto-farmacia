@@ -34,17 +34,16 @@ export default function Medicamentos() {
 
     const [medicamentos, setMedicamentos] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
     const [busqueda, setBusqueda] = useState('');
     const [categorias, setCategorias] = useState([]);
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
     const [formularioAbierto, setFormularioAbierto] = useState(false);
     const [medicamentoEditando, setMedicamentoEditando] = useState(null);
-    
+
 
     const [nuevoMedicamento, setNuevoMedicamento] = useState({
         nombre: '',
-        precio: '',
+        precio: '', 
         stock: '',
         categoria_id: '',
         fecha_vencimiento: ''
@@ -78,9 +77,15 @@ export default function Medicamentos() {
     }, []);
 
     // Filtrar medicamentos por nombre
-    const medicamentosFiltrados = medicamentos.filter((med) =>
-        med.nombre?.toLowerCase().includes(busqueda.toLowerCase())
-    );
+    const medicamentosFiltrados = medicamentos.filter((med) => {
+        const coincideNombre = med.nombre?.toLowerCase().includes(busqueda.toLowerCase());
+
+        const coincideCategoria =
+            categoriaSeleccionada === '' ||
+            med.categoria_id === Number(categoriaSeleccionada);
+
+        return coincideNombre && coincideCategoria;
+    });
 
     // Validar un campo del formulario
     const validarCampo = (name, value) => {
