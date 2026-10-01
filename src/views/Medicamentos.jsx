@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { getMedicamentos, getCategorias } from '../services/api';
+import { getMedicamentos, getCategorias, crearMedicamento, actualizarMedicamento } from '../services/api';
 
 import {
     Box,
@@ -34,18 +34,19 @@ export default function Medicamentos() {
 
     const [medicamentos, setMedicamentos] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
     const [busqueda, setBusqueda] = useState('');
     const [categorias, setCategorias] = useState([]);
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
     const [formularioAbierto, setFormularioAbierto] = useState(false);
+    const [medicamentoEditando, setMedicamentoEditando] = useState(null);
 
     const [nuevoMedicamento, setNuevoMedicamento] = useState({
         nombre: '',
-        descripcion: '',
         precio: '',
         stock: '',
         categoria_id: '',
-        fecha: ''
+        fecha_vencimiento: ''
     });
 
     const [erroresFormulario, setErroresFormulario] = useState({});
@@ -108,7 +109,7 @@ export default function Medicamentos() {
             error = 'La categoría es obligatoria.';
         }
 
-        if (name === 'fecha') {
+        if (name === 'fecha_vencimiento') {
             if (!value) {
                 error = 'La fecha es obligatoria.';
             } else if (Number.isNaN(new Date(value).getTime())) {
@@ -156,20 +157,77 @@ export default function Medicamentos() {
         return Object.keys(nuevosErrores).length === 0;
     };
 
+    const editarMedicamento = (medicamento) => {
+        setMedicamentoEditando(medicamento);
+
+        setNuevoMedicamento({
+            nombre: medicamento.nombre,
+            precio: medicamento.precio,
+            stock: medicamento.stock,
+            categoria_id: medicamento.categoria_id,
+            fecha_vencimiento: medicamento.fecha_vencimiento
+        });
+
+        setErroresFormulario({});
+        setFormularioAbierto(true);
+    };
     // Cerrar formulario y limpiar los campos
     const cerrarFormulario = () => {
         setFormularioAbierto(false);
 
         setNuevoMedicamento({
             nombre: '',
-            descripcion: '',
             precio: '',
             stock: '',
             categoria_id: '',
-            fecha: ''
+            fecha_vencimiento: ''
         });
 
         setErroresFormulario({});
+        setMedicamentoEditando(null);
+    };
+
+    const guardarMedicamento = async () => {
+        if (!validarFormulario()) {
+            return;
+        }
+
+        try {
+            const datosMedicamento = {
+                nombre: nuevoMedicamento.nombre,
+                precio: Number(nuevoMedicamento.precio),
+                stock: Number(nuevoMedicamento.stock),
+                categoria_id: Number(nuevoMedicamento.categoria_id),
+                fecha_vencimiento: nuevoMedicamento.fecha_vencimiento
+            };
+
+            if (medicamentoEditando) {
+                const resultado = await actualizarMedicamento(
+                    medicamentoEditando.id,
+                    datosMedicamento
+                );
+
+                setMedicamentos(
+                    medicamentos.map((med) =>
+                        med.id === medicamentoEditando.id
+                            ? resultado.medicamento
+                            : med
+                    )
+                );
+            } else {
+                const resultado = await crearMedicamento(datosMedicamento);
+
+                setMedicamentos([
+                    ...medicamentos,
+                    resultado.medicamento
+                ]);
+            }
+
+            cerrarFormulario();
+            setMedicamentoEditando(null);
+        } catch (error) {
+            console.error('Error al guardar medicamento:', error);
+        }
     };
 
     return (
@@ -911,18 +969,6 @@ export default function Medicamentos() {
 
                                         <TableCell>
                                             <Typography
-                                                variant="body2"
-                                                sx={{
-                                                    color: 'text.secondary',
-                                                    maxWidth: 300
-                                                }}
-                                            >
-                                                {med.descripcion}
-                                            </Typography>
-                                        </TableCell>
-
-                                        <TableCell>
-                                            <Typography
                                                 sx={{
                                                     fontWeight: 700,
                                                     color: '#1565C0'
@@ -951,6 +997,7 @@ export default function Medicamentos() {
                                         <TableCell align="center">
                                             <IconButton
                                                 size="small"
+                                                onClick={() => editarMedicamento(med)}
                                                 sx={{
                                                     color: '#1976D2',
                                                     backgroundColor: '#EEF7FF',
@@ -998,7 +1045,9 @@ export default function Medicamentos() {
                             pb: 1
                         }}
                     >
-                        Nuevo medicamento
+                        {medicamentoEditando
+                            ? 'Editar medicamento'
+                            : 'Nuevo medicamento'}
                     </DialogTitle>
 
                     <DialogContent>
@@ -1021,18 +1070,6 @@ export default function Medicamentos() {
                                 helperText={
                                     erroresFormulario.nombre
                                 }
-                                fullWidth
-                            />
-
-                            <TextField
-                                label="Descripción"
-                                name="descripcion"
-                                value={
-                                    nuevoMedicamento.descripcion
-                                }
-                                onChange={handleCambioFormulario}
-                                multiline
-                                rows={3}
                                 fullWidth
                             />
 
@@ -1109,15 +1146,15 @@ export default function Medicamentos() {
 
                             <TextField
                                 label="Fecha de vencimiento"
-                                name="fecha"
+                                name="fecha_vencimiento"
                                 type="date"
-                                value={nuevoMedicamento.fecha}
+                                value={nuevoMedicamento.fecha_vencimiento}
                                 onChange={handleCambioFormulario}
                                 error={Boolean(
-                                    erroresFormulario.fecha
+                                    erroresFormulario.fecha_vencimiento
                                 )}
                                 helperText={
-                                    erroresFormulario.fecha
+                                    erroresFormulario.fecha_vencimiento
                                 }
                                 slotProps={{
                                     inputLabel: {
@@ -1146,10 +1183,12 @@ export default function Medicamentos() {
 
                         <Button
                             variant="contained"
-                            disabled
+                            onClick={guardarMedicamento}
                             startIcon={<AddIcon />}
                         >
-                            Guardar medicamento
+                            {medicamentoEditando
+                                ? 'Guardar cambios'
+                                : 'Guardar medicamento'}
                         </Button>
                     </DialogActions>
                 </Dialog>

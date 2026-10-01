@@ -1,4 +1,4 @@
-// URL base de tu backend de Flask
+// URL base de backend de Flask
 const API_URL = 'http://localhost:5000/api';
 
 // --- MEDICAMENTOS ---
@@ -10,6 +10,54 @@ export const getMedicamentos = async () => {
     } catch (error) {
         console.error(error);
         return [];
+    }
+};
+
+export const crearMedicamento = async (medicamento) => {
+    try {
+        const response = await fetch(`${API_URL}/medicamentos`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(medicamento)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Error al crear medicamento');
+        }
+
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
+export const actualizarMedicamento = async (id, medicamento) => {
+    try {
+        const response = await fetch(`${API_URL}/medicamentos/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(medicamento)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || 'Error al actualizar medicamento'
+            );
+        }
+
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
     }
 };
 
