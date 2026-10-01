@@ -61,6 +61,27 @@ export const actualizarMedicamento = async (id, medicamento) => {
     }
 };
 
+export const eliminarMedicamento = async (id) => {
+    try {
+        const response = await fetch(`${API_URL}/medicamentos/${id}`, {
+            method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || 'Error al eliminar medicamento'
+            );
+        }
+
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+};
+
 // --- CATEGORÍAS ---
 export const getCategorias = async () => {
     try {

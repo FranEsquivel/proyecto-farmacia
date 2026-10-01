@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { getMedicamentos, getCategorias, crearMedicamento, actualizarMedicamento } from '../services/api';
+import { getMedicamentos, getCategorias, crearMedicamento, actualizarMedicamento, eliminarMedicamento } from '../services/api';
 
 import {
     Box,
@@ -40,6 +40,7 @@ export default function Medicamentos() {
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
     const [formularioAbierto, setFormularioAbierto] = useState(false);
     const [medicamentoEditando, setMedicamentoEditando] = useState(null);
+    
 
     const [nuevoMedicamento, setNuevoMedicamento] = useState({
         nombre: '',
@@ -227,6 +228,18 @@ export default function Medicamentos() {
             setMedicamentoEditando(null);
         } catch (error) {
             console.error('Error al guardar medicamento:', error);
+        }
+    };
+
+    const borrarMedicamento = async (id) => {
+        try {
+            await eliminarMedicamento(id);
+
+            setMedicamentos(
+                medicamentos.filter((med) => med.id !== id)
+            );
+        } catch (error) {
+            console.error('Error al eliminar medicamento:', error);
         }
     };
 
@@ -860,15 +873,6 @@ export default function Medicamentos() {
                                 <TableCell
                                     sx={{
                                         fontWeight: 700,
-                                        color: '#00897B'
-                                    }}
-                                >
-                                    Descripción
-                                </TableCell>
-
-                                <TableCell
-                                    sx={{
-                                        fontWeight: 700,
                                         color: '#1565C0'
                                     }}
                                 >
@@ -1013,6 +1017,7 @@ export default function Medicamentos() {
 
                                             <IconButton
                                                 size="small"
+                                                onClick={() => borrarMedicamento(med.id)}
                                                 sx={{
                                                     color: '#D32F2F',
                                                     backgroundColor: '#FFF1F1',
